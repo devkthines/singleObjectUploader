@@ -53,3 +53,59 @@
           </a>
         </div>
       </div>/*/}
+
+
+      async function handleUpload(e) {
+
+        const file = e.target.files[0];
+      
+        // Set CORS headers
+        const headers = { 
+          'Origin': 'yourdomain.com',
+          'Access-Control-Request-Method': 'POST',
+          'Access-Control-Request-Headers': 'x-amz-meta-custom'
+        };
+      
+        // Preflight request
+        const optionsReq = new PutObjectCommand({
+          Bucket: selectedBucket,
+          Key: file.name,
+          Headers: headers,
+          Method: 'OPTIONS'
+        });
+      
+        const optionsRes = await client.send(optionsReq);
+      
+        // Check for CORS headers
+        if(!optionsRes.Metadata['Access-Control-Allow-Origin']) {
+          throw new Error('CORS error'); 
+        }
+      
+        // Actual upload
+        const uploadReq = new PutObjectCommand({
+          Bucket: selectedBucket,
+          Key: file.name,
+          Body: file,
+          Headers: headers
+        });
+      
+        const uploadRes = await client.send(uploadReq);
+      
+        // Handle errors
+        if(!uploadRes.$metadata.httpStatusCode === 200) {
+          throw new Error('Upload failed');
+        }
+      
+        // Rest of upload logic  
+      
+      }
+      
+      // Other client code
+      
+      const downloadRes = await client.send(getObjectCommand);
+      
+      if(downloadRes.Metadata['x-amz-error-code']) {
+        // handle S3 error  
+      }
+      
+      // etc

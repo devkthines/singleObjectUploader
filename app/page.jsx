@@ -16,7 +16,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import Login from "@/components/login";
 import Logout from "@/components/logout";
-
+import LargeUploader from "@/components/largeUpload";
 const client = new S3Client({
   region: 'us-east-2',
   // credentials: fromCognitoIdentityPool({
@@ -140,9 +140,13 @@ export default function Home() {
       });
       const totalBytes = file.size;
       const uploadProgress = (progress) => {
-        setProgress((progress.loaded / totalBytes) * 100);
+        setProgress(prevProgress => (progress.loaded / totalBytes) * 100);
+        console.log('Progress: ',progress)
       };
-      await client.send(command, { partSize: 5 * 1024 * 1024, onUploadProgress: uploadProgress });
+      await client.send(command, {
+         partSize: 5 * 1024 * 1024,
+          onUploadProgress: uploadProgress
+         });
       setObjects((prevObjects) => [
         ...prevObjects,
         {
@@ -233,5 +237,6 @@ export default function Home() {
       ): <Login/>}
       
     </main>
+    // <LargeUploader/>
   );
 }
